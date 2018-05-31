@@ -5,6 +5,8 @@
 using namespace TMath;
 
 void beam(){
+     //ben de ben de yapmak istiyorum
+    // oldu mu oldu muuu???
      TH2F *h2=new TH2F( " h2 " , "x-px" , 1000 , -50 , 50 , 1000 , -30 , 30 ) ;
      TH2F *h3=new TH2F( " h3 " , "y-py" , 1000 , -50 , 50 , 1000 , -30 , 30 ) ;
      TH1F *h4=new TH1F( " h4 " , "x-number of particles" , 100 , -100 , 100 ) ;

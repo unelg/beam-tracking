@@ -5,18 +5,16 @@
 using namespace TMath;
 
 void beam(){
-     //ben de ben de yapmak istiyorum
-    // oldu mu oldu muuu???
      TH2F *h2=new TH2F( " h2 " , "x-px" , 1000 , -50 , 50 , 1000 , -30 , 30 ) ;
      TH2F *h3=new TH2F( " h3 " , "y-py" , 1000 , -50 , 50 , 1000 , -30 , 30 ) ;
      TH1F *h4=new TH1F( " h4 " , "x-number of particles" , 100 , -100 , 100 ) ;
      TH1F *h5=new TH1F( " h5 " , "y-number of particles" , 100 , -100 , 100 ) ;
      TH2F *h6=new TH2F( " h6 " , "driftx-px" , 1000 , -400 , 400 , 1000 , -8 , 8 ) ;
-     TH2F *h7=new TH2F( " h2 " , "quad x-px" , 1000 , -50 , 50 , 1000 , -30 , 30 ) ;
-     TH2F *h8=new TH2F( " h3 " , "quad y-py" , 1000 , -50 , 50 , 1000 , -30 , 30 ) ;
-     TH1F *h9=new TH1F( " h4 " , "quad x-number of particles" , 100 , -100 , 100 ) ;
-     TH1F *h10=new TH1F( " h5 " , "quad y-number of particles" , 100 , -100 , 100 ) ;
-     TH2F *h11=new TH2F( " h6 " , "solenoid x-px" , 1000 , -400 , 400 , 1000 , -8 , 8 ) ;
+     TH2F *h7=new TH2F( " h7 " , "quad x-px" , 1000 , -50 , 50 , 1000 , -30 , 30 ) ;
+     TH2F *h8=new TH2F( " h8 " , "quad y-py" , 1000 , -50 , 50 , 1000 , -30 , 30 ) ;
+     TH1F *h9=new TH1F( " h9 " , "quad x-number of particles" , 100 , -100 , 100 ) ;
+     TH1F *h10=new TH1F( " h10 " , "quad y-number of particles" , 100 , -100 , 100 ) ;
+     TH2F *h11=new TH2F( " h11 " , "solenoid x-px" , 1000 , -400 , 400 , 1000 , -8 , 8 ) ;
      TGraph *gr = new TGraph();
      TGraph *gr2 = new TGraph();
      TGraph *gr3 = new TGraph();
@@ -29,22 +27,23 @@ void beam(){
      TGraph *gr10 = new TGraph();
      TGraph *gr11 = new TGraph();
      TGraph *gr12 = new TGraph();
-
-//-----initial conditions   
+   
     double restmass= 938*1000; //KeV
     double kenergy= 20; //KeV
     double x_max = 10; //milimeter
     double px = 0.6; //miliradyan
     double y_max = 10;
     double py = 0.6;
-    double nemitx= 0.01;//(mm*mrad*pi)
-    double nemity= 0.01;//(mm*mrad*pi)
-
-//----- derived quantities
     double rgamma= 1+(kenergy/restmass);
     double rbeta= sqrt(1-(1/(rgamma*rgamma)));
+    double nemitx= 0.01;//(mm*mrad*pi)
+    double nemity= 0.01;//(mm*mrad*pi)
     double gemitx= nemitx/(rgamma*rbeta);
     double gemity= nemity/(rgamma*rbeta);;
+    //double tgammax = (px_max*px_max)/gemitx;
+    //double tgammay= (py_max*py_max)/gemity;
+ 
+    
     double tbetax= (x_max*x_max)/gemitx;
     double tbetay= (y_max*y_max)/gemity;
     double talphax = px/sqrt(gemitx/tbetax);
@@ -55,8 +54,10 @@ void beam(){
     double emity ;
     double Nemitx ;
     double Nemity ;
-    double rhox = 0.5*atan((2*talphax)/(tgammax-tbetax));
-    double rhoy = 0.5*atan((2*talphay)/(tgammay-tbetay));
+    double px_max= sqrt(tgammax*gemitx);
+    double py_max= sqrt(tgammay*gemity);
+    double rhox = tan(0.5*atan((2*talphax)/(tgammax-tbetax)))*((x_max)/px_max);
+    double rhoy = tan(0.5*atan((2*talphay)/(tgammay-tbetay)))*((y_max)/py_max);//angle correlation a çevrildi.
     //double rhox = -0.9;
     //double rhoy = -0.9;
     cout<<"alpha: "<<talphax<<"beta: "<<tbetax<<"gamma: "<<tgammax<<"gemit: "<<gemitx<<"rgamma: "<<rgamma<<"rbeta "<<rbeta<<endl;
@@ -64,14 +65,18 @@ void beam(){
     double px_max= sqrt(tgammax*gemitx);
     double py_max= sqrt(tgammay*gemity);
     cout<<"pxmax: "<<px_max<<endl;
-    double rx, rpx;
-    double ry, rpy;
-    double nrx, nrpx;
-    double nry, nrpy;
+    double rx ;
+    double rpx;
+    double nrx;
+    double nrpx;
+    double nry;
+    double nrpy;
+    double ry;
+    double rpy;
    
-    const int N=5000;
+    const int N =5000;
     double particle [N][4];
-    cout<<rhox<<" "<<rhoy<<endl;
+    //cout<<rhox<<" "<<rhoy<<endl;
     TRandom2 *r2=new TRandom2();
     ofstream myfile2;
     myfile2.open ("beambegin.txt");
@@ -80,6 +85,7 @@ void beam(){
     cout<<"gammax="<<tgammax<<" betax="<<tbetax<<" alphax="<< talphax <<" geometricemmitance= "<<gemitx<<" rhox:"<<rhox<<" rhoy: "<<rhoy << endl;
     for (int i = 0; i < N; ++i){
         
+        
         myengine->Gaussian2D(x_max/2, px_max, rhox, rx, rpx);
         myengine->Gaussian2D(y_max/2, py_max, rhoy, ry, rpy);
 
@@ -87,12 +93,14 @@ void beam(){
         emitx = (tgammax*rx*rx) + (2*talphax*rx*rpx) + (tbetax*rpx*rpx);
         emity = (tgammay*ry*ry) + (2*talphay*ry*rpy) + (tbetay*rpy*rpy);
         
-        particle[i][0]= rx;
-        particle[i][1]= rpx;
-        particle[i][2]= ry;
-        particle[i][3]= rpy;
-//cout<<particle[i][0]<<" "<<particle [i][1]<<endl;
-        myfile2 <<rx<<" "<<rpx<<" "<<ry<<" "<<rpy<<endl;
+        
+        
+            particle [i][0] = rx;
+            particle [i][1] = rpx;
+            particle [i][2] = ry;
+            particle [i][3] = rpy;
+            //cout<<particle [i][0]<<" "<<particle [i][1]<<endl;
+            myfile2 <<rx<<" "<<rpx<<" "<<ry<<" "<<rpy<<endl;
         gr2-> SetPoint(i,rx,rpx);
         gr3-> SetPoint(i,ry,rpy);
         gr4-> SetPoint(i,rx,ry);
@@ -114,13 +122,14 @@ void beam(){
      emity = (tgammay*ry*ry) + (2*talphay*ry*rpy) + (tbetay*rpy*rpy);
      beamRad=sqrt(rx*rx + ry*ry);
      
+     
      if (gemitx >= emitx  && gemity >= emity && beamRad<=x_max){
      //cout<<emitx<<" "<<emity<<endl;
      
-     particle[i][0] = rx;
-     particle[i][1] = rpx;
-     particle[i][2] = ry;
-     particle[i][3] = rpy;
+     particle [i][0] = rx;
+     particle [i][1] = rpx;
+     particle [i][2] = ry;
+     particle [i][3] = rpy;
      //cout<<"x: "<<particle [i][0]<<"px: "<<particle [i][1]<<"y: "<<particle [i][2]<<"py: "<<particle [i][3]<<endl;
      myfile2 <<rx<<" "<<rpx<<" "<<ry<<" "<<rpy<<endl;
      //cout<<"firstrx: "<<particle [i][0] <<" firstrpx: "<<particle [i][1]<<endl;
@@ -133,9 +142,7 @@ void beam(){
      h5->Fill(ry);} else --i;
      }*/
     myfile2.close();
-//----------------------beam creation ends here
-
-    double l=312;// this is drift distance in mm
+    double l=312;
     ofstream myfile;
     myfile.open ("beam.txt");
     double ntbetax;
@@ -147,10 +154,10 @@ void beam(){
     
     for (int n = 0; n<N; n++){
         //cout<<"old rx: "<<particle [n][2]<<"old rpx: "<<particle [n][2]<<endl;
-         rx = particle[n][0];
-        rpx = particle[n][1];
-         ry = particle[n][2];
-        rpy = particle[n][3];
+        rx = particle [n][0];
+        rpx = particle [n][1];
+        ry = particle [n][2];
+        rpy = particle [n][3];
         
         nrx = rx + (l*rpx);
         ntbetax = tbetax -2*l*talphax+l*l*tgammax;
@@ -161,10 +168,10 @@ void beam(){
         ntalphay = talphay- l*tgammay;
         ntgammay=tgammay;
       
-        particle[n][0] = nrx;
-        particle[n][1] = rpx;
-        particle[n][2] = nry;
-        particle[n][3] = rpy;
+        particle [n][0] = nrx;
+        particle [n][1] = rpx;
+        particle [n][2] = nry;
+        particle [n][3] = rpy;
         //cout<<"newry: "<<particle [n][2]<<"newrpy: "<<particle [n][3]<<endl;
         Nemitx = (tgammax*nrx*nrx) + (2*talphax*nrx*rpx) + (tbetax*rpx*rpx);
         //Nemity = (tgammay*nry*nry) + (2*talphay*ry*rpy) + (tbetay*rpy*rpy);
@@ -175,12 +182,10 @@ void beam(){
         gr6-> SetPoint(n,nrx,nry);
         h6->Fill(nrx,rpx);
     }
-//------------------------- drift in free space ends here
-
     myfile.close();
-    double L=0.5;//(meter) ----------QUADRUPOLE
+    double L=50;//(milimeter)
     double g=5 ;//quadrupole gradient(T/m)
-    double K = (0.299*g)/(rbeta*kenergy); // quadrupole strength(mm^-2)
+    double K =(0.299*g)/(rbeta*kenergy); // quadrupole strength(mm^-2)
     // Quadrupole transfer focusing in x defocusing in y
     double nqtbetax;
     double nqtalphax;
@@ -189,17 +194,12 @@ void beam(){
     myfile3.open ("beamquad.txt");
     for (int n = 0; n<N; n++){
         //cout<<"old rx: "<<particle [n][2]<<"old rpx: "<<particle [n][2]<<endl;
-        rx = particle[n][0];
-       rpx = particle[n][1];
-        ry = particle[n][2];
-       rpy = particle[n][3];
+        rx = particle [n][0];
+        rpx = particle [n][1];
+        ry = particle [n][2];
+        rpy = particle [n][3];
         
         nrx = rx*cos(sqrt(K)*L) + rpx*(1/sqrt(K))*sin(sqrt(K)*L);
-        
-        nqtbetax = cos(sqrt(K)*L)*cos(sqrt(K)*L)*ntbetax -2*(1/sqrt(K))*sin(sqrt(K)*L)*cos(sqrt(K)*L)*ntalphax+ (1/K)*sin(sqrt(K)*L)*sin(sqrt(K)*L)*ntgammax;
-        
-        nqtalphax = -sqrt(K)*sin(sqrt(K)*L)*cos(sqrt(K)*L)*ntbetax-sin(sqrt(K)*L)*sin(sqrt(K)*L)*ntalphax-cos(sqrt(K)*L)*cos(sqrt(K)*L)*ntalphax-(1/sqrt(K))*sin(sqrt(K)*L)*cos(sqrt(K)*L)*ntgammax;
-        nqtgammax = K*sin(sqrt(K)*L)*sin(sqrt(K)*L)*ntbetax+2*sin(sqrt(K)*L)*cos(sqrt(K)*L)*ntalphax+cos(sqrt(K)*L)*cos(sqrt(K)*L)*ntgammax;
         
         nrpx = rx*(-1*sqrt(K))*sin(sqrt(K)*L) + rpx*cos(sqrt(K)*L);
         
@@ -208,10 +208,15 @@ void beam(){
         nrpy = ry*(sqrt(K))*sinh(sqrt(K)*L) + rpy*cosh(sqrt(K)*L);
         cout<<nrx<<"ry: "<<rx<<" rpy: "<<rpx<<"  "<<nrpx<<endl;
         
-        particle[n][0] = nrx;
-        particle[n][1] = nrpx;
-        particle[n][2] = nry;
-        particle[n][3] = nrpy;
+        nqtbetax = cos(sqrt(K)*L)*cos(sqrt(K)*L)*ntbetax -2*(1/sqrt(K))*sin(sqrt(K)*L)*cos(sqrt(K)*L)*ntalphax+ (1/K)*sin(sqrt(K)*L)*sin(sqrt(K)*L)*ntgammax;
+        
+        nqtalphax = -sqrt(K)*sin(sqrt(K)*L)*cos(sqrt(K)*L)*ntbetax-sin(sqrt(K)*L)*sin(sqrt(K)*L)*ntalphax-cos(sqrt(K)*L)*cos(sqrt(K)*L)*ntalphax-(1/sqrt(K))*sin(sqrt(K)*L)*cos(sqrt(K)*L)*ntgammax;
+        nqtgammax = K*sin(sqrt(K)*L)*sin(sqrt(K)*L)*ntbetax+2*sin(sqrt(K)*L)*cos(sqrt(K)*L)*ntalphax+cos(sqrt(K)*L)*cos(sqrt(K)*L)*ntgammax;
+        
+        particle [n][0] = nrx;
+        particle [n][1] = nrpx;
+        particle [n][2] = nry;
+        particle [n][3] = nrpy;
         //cout<<"newry: "<<particle [n][2]<<"newrpy: "<<particle [n][3]<<endl;
         Nemitx = (tgammax*nrx*nrx) + (2*talphax*nrx*rpx) + (tbetax*rpx*rpx);
         //Nemity = (tgammay*nry*nry) + (2*talphay*ry*rpy) + (tbetay*rpy*rpy);
@@ -225,31 +230,33 @@ void beam(){
         h9->Fill(nrx,n);
         h10->Fill(nry,n);
     }
-//------------------------QUAD ends here
+
     myfile3.close();
-
-
-//--------------------------------- solenoid transfer entry,exit and body all together
-    double Ls=0.5; // solenoid length in M
-    double k=0.9; //solenoid strength in
+    // solenoid transfer entry,exit and body all together
+    double Ls=50; // solenoid length
+    double gs=0.5;
+    double k=(0.299*g)/(rbeta*kenergy); //solenoid strength
     ofstream myfile4;
     myfile4.open ("beamsolenoid.txt");
     for (int n = 0; n<N; n++){
         //cout<<"old rx: "<<particle [n][2]<<"old rpx: "<<particle [n][2]<<endl;
-        rx = particle[n][0];
-       rpx = particle[n][1];
-        ry = particle[n][2];
-       rpy = particle[n][3];
+        rx = particle [n][0];
+        rpx = particle [n][1];
+        ry = particle [n][2];
+        rpy = particle [n][3];
         
-        nrx =  rx*cos(k*Ls)*cos(k*Ls)   +rpx*(1/k)*sin(k*Ls)*cos(k*Ls)+ry*sin(k*Ls)*cos(k*Ls) +rpy*(1/k)*sin(k*Ls)*sin(k*Ls);
-       nrpx = -rx*sin(k*Ls)*cos(k*Ls)*k +rpx*cos(k*Ls)*cos(k*Ls)-ry*k*sin(k*Ls)*sin(k*Ls)     +rpy*sin(k*Ls)*cos(k*Ls);
-        nry = -rx*sin(k*Ls)*cos(k*Ls)   -rpx*(1/k)*sin(k*Ls)*sin(k*Ls)+ry*cos(k*Ls)*cos(k*Ls) +rpy*(1/k)*sin(k*Ls)*cos(k*Ls);
-        nrpy = rx*sin(k*Ls)*sin(k*Ls)*k -rpx*cos(k*Ls)*sin(k*Ls)-ry*k*sin(k*Ls)*cos(k*Ls)     +rpy*cos(k*Ls)*cos(k*Ls);
+        nrx = rx*cos(k*Ls)*cos(k*Ls) +rpx*(1/k)*sin(k*Ls)*cos(k*Ls)+ry*sin(k*Ls)*cos(k*Ls) +rpy*(1/k)*sin(k*Ls)*sin(k*Ls);
         
-        particle[n][0] = nrx;
-        particle[n][1] = nrpx;
-        particle[n][2] = nry;
-        particle[n][3] = nrpy;
+        nrpx = -rx*sin(k*Ls)*cos(k*Ls)*k +rpx*cos(k*Ls)*cos(k*Ls)-ry*k*sin(k*Ls)*sin(k*Ls) +rpy*sin(k*Ls)*cos(k*Ls);
+    
+        nry = -rx*sin(k*Ls)*cos(k*Ls) -rpx*(1/k)*sin(k*Ls)*sin(k*Ls)+ry*cos(k*Ls)*cos(k*Ls) +rpy*(1/k)*sin(k*Ls)*cos(k*Ls);
+        
+        nrpy = rx*sin(k*Ls)*sin(k*Ls)*k -rpx*cos(k*Ls)*sin(k*Ls)-ry*k*sin(k*Ls)*cos(k*Ls) +rpy*cos(k*Ls)*cos(k*Ls);
+        
+        particle [n][0] = nrx;
+        particle [n][1] = nrpx;
+        particle [n][2] = nry;
+        particle [n][3] = nrpy;
         //cout<<"newry: "<<particle [n][2]<<"newrpy: "<<particle [n][3]<<endl;
         Nemitx = (tgammax*nrx*nrx) + (2*talphax*nrx*rpx) + (tbetax*rpx*rpx);
         //Nemity = (tgammay*nry*nry) + (2*talphay*ry*rpy) + (tbetay*rpy*rpy);
@@ -258,14 +265,18 @@ void beam(){
         gr10-> SetPoint(n,nrx,nrpx);
         gr11-> SetPoint(n,nry,nrpy);
         gr12-> SetPoint(n,nrx,nry);
-        h10->Fill(nrx,nrpx);
+        h11->Fill(nrx,nrpx);
     }
-//---------------------------solenoid ends.    
+    
+    
+    
     myfile4.close();
     
+   
     
-//-----------------------------NOW DRAW ALL    
+    
     TCanvas *c1=new TCanvas();
+    TCanvas *c2=new TCanvas();
     c1->Divide(4,4);
  
     //c1->Update();
@@ -330,4 +341,8 @@ void beam(){
     gr12->GetHistogram()->GetYaxis()->SetTitle("y");
     gr12->Draw("AP");
     
+
+    
+  
+
     }
